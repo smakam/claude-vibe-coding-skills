@@ -1,6 +1,6 @@
 # Vibe Coding Playbook
 
-A methodology and toolkit for effective AI-assisted development — from blank page to production-ready project.
+A methodology and toolkit for AI-assisted development across new and existing projects.
 
 ## Playbook
 
