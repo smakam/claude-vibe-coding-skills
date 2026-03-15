@@ -172,6 +172,38 @@
   }
   .antipattern-text { color: #C9A8A8; }
 
+  .sub-tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+  .sub-tab {
+    padding: 6px 14px;
+    background: #0D1117;
+    border: 1px solid #21262D;
+    border-radius: 20px;
+    color: #8B949E;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+  .sub-tab.active {
+    color: #F0F6FC;
+    font-weight: 600;
+  }
+  .section-divider {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #8B949E;
+    margin: 18px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #21262D;
+  }
+
   .quick-ref {
     padding: 0 24px 32px;
   }
@@ -238,41 +270,145 @@
 <script>
 const phases = [
   {
-    id: "before", title: "Before You Start", subtitle: "Set yourself up to win", color: "#E8B931", icon: "🎯",
-    practices: [
+    id: "before", title: "Before You Start", subtitle: "Set yourself up to win — whether it's a new project or an existing codebase", color: "#E8B931", icon: "🎯",
+    sections: [
       {
-        title: "Write the PRD first, not the prompt",
-        why: "Your AI agent is a fast but forgetful junior dev. Without a spec, it will make random architectural choices you'll spend hours undoing.",
-        how: [
-          "Write what the system does, who uses it, core user flows, and data model — even if rough",
-          "For UI work, sketch wireframes (hand-drawn is fine — agents interpret screenshots well)",
-          "Define your tech stack and specific versions (models may have stale knowledge of newer versions)",
-          "Commit the PRD to the repo so every agent session has access to it"
-        ],
-        antipattern: "Jumping straight into prompting without knowing what you're building. You'll 'vibe' yourself into a rewrite."
+        label: "Common",
+        practices: [
+          {
+            title: "Bootstrap governance files before writing code",
+            why: "Every agent session starts from zero. Without persistent context files, you're re-onboarding a new hire every time. This applies equally to new projects and existing codebases.",
+            how: [
+              "Create AGENTS.md with coding conventions, workflow rules, security guardrails, and repo map",
+              "Set up ai/PLAN.md, ai/STATUS.md, ai/DECISIONS.md for task tracking — these are your session-to-session memory",
+              "Add tool-specific shims (CLAUDE.md, .cursor/rules) that point back to AGENTS.md",
+              "<strong>Use skills to automate this:</strong> the <code>vibe-coding-new-project</code> skill runs a kickoff interview and auto-generates all governance files for new projects; the <code>vibe-coding-bootstrap-existing-repo</code> skill scans an existing repo and generates files matched to your actual stack. Both at <a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#4A90D9'>github.com/smakam/claude-vibe-coding-skills</a>"
+            ],
+            antipattern: "Starting a session without AGENTS.md. The agent will guess at your conventions and guess wrong."
+          },
+          {
+            title: "Use PLAN, STATUS, and DECISIONS — they're your session-to-session memory",
+            why: "On greenfield, a bad plan wastes time. On existing codebases, a bad plan breaks things other teams depend on. These tracking files protect you from drift, rework, and the agent going rogue.",
+            how: [
+              "ai/PLAN.md: write the plan scoped to the actual architecture — whether you're building it or inheriting it",
+              "ai/STATUS.md: update after every step — if a session dies mid-feature, the next session needs to know exactly where you left off and what was already changed",
+              "ai/DECISIONS.md: record WHY you chose approach A over B — this prevents future sessions from re-litigating settled decisions",
+              "Add a 'Files Modified' section to STATUS.md — essential for safe rollback on both new and existing codebases",
+              "These are committed to git (DECISIONS.md) or gitignored (PLAN.md, STATUS.md) — know which is which"
+            ],
+            antipattern: "Skipping plan/status/decisions because 'it's a small change'. Small changes on large codebases cause the biggest incidents."
+          }
+        ]
       },
       {
-        title: "Bootstrap governance files before writing code",
-        why: "Every agent session starts from zero. Without persistent context files, you're re-onboarding a new hire every time. This applies equally to new projects and existing codebases.",
-        how: [
-          "Create AGENTS.md with coding conventions, workflow rules, security guardrails, and repo map",
-          "Set up ai/PLAN.md, ai/STATUS.md, ai/DECISIONS.md for task tracking — these are your session-to-session memory",
-          "Add tool-specific shims (CLAUDE.md, .cursor/rules) that point back to AGENTS.md",
-          "For existing codebases: generate these from the repo (see Existing Codebases tab). For new projects: define them upfront.",
-          "<strong>Use skills to automate this:</strong> the <code>vibe-coding-new-project</code> skill runs a kickoff interview and auto-generates all governance files for new projects; the <code>vibe-coding-bootstrap-existing-repo</code> skill scans an existing repo and generates files matched to your actual stack. Both at <a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#4A90D9'>github.com/smakam/claude-vibe-coding-skills</a>"
-        ],
-        antipattern: "Maintaining separate rule files per tool that drift out of sync. One canonical source, multiple pointers."
+        label: "New Projects",
+        practices: [
+          {
+            title: "Write the PRD first, not the prompt",
+            why: "Your AI agent is a fast but forgetful junior dev. Without a spec, it will make random architectural choices you'll spend hours undoing.",
+            how: [
+              "Write what the system does, who uses it, core user flows, and data model — even if rough",
+              "For UI work, sketch wireframes (hand-drawn is fine — agents interpret screenshots well)",
+              "Define your tech stack and specific versions (models may have stale knowledge of newer versions)",
+              "Commit the PRD to the repo so every agent session has access to it"
+            ],
+            antipattern: "Jumping straight into prompting without knowing what you're building. You'll 'vibe' yourself into a rewrite."
+          },
+          {
+            title: "Pick a simple, well-known tech stack",
+            why: "Models generate dramatically better code for popular frameworks they've seen extensively in training data. Exotic stacks = more hallucinations.",
+            how: [
+              "Ask the model which version of a framework it knows before using it",
+              "If you must use a newer version, paste the relevant docs into context",
+              "Prefer standard patterns the model has seen millions of times",
+              "Minimize dependencies — each one is a potential hallucination surface"
+            ],
+            antipattern: "Using the latest bleeding-edge release of everything and expecting the model to know it."
+          }
+        ]
       },
       {
-        title: "Pick a simple, well-known tech stack",
-        why: "Models generate dramatically better code for popular frameworks they've seen extensively in training data. Exotic stacks = more hallucinations.",
-        how: [
-          "Ask the model which version of a framework it knows before using it",
-          "If you must use a newer version, paste the relevant docs into context",
-          "Prefer standard patterns the model has seen millions of times",
-          "Minimize dependencies — each one is a potential hallucination surface"
-        ],
-        antipattern: "Using the latest bleeding-edge release of everything and expecting the model to know it."
+        label: "Existing Codebases",
+        practices: [
+          {
+            title: "Audit before you agent — never skip the reconnaissance",
+            why: "On a greenfield project, bad AI output means wasted time. On an existing codebase, it means broken production systems. You need to understand what's there before letting an agent touch it.",
+            how: [
+              "Manually explore: directory structure, entry points, build system, test coverage, CI/CD pipeline",
+              "Identify the tech stack, dependency versions, coding patterns, and naming conventions already in use",
+              "Map the 'danger zones' — auth, payments, migrations, infra — before the agent discovers them the hard way",
+              "Check test coverage: if it's low, write tests for the areas you'll be changing BEFORE you start prompting"
+            ],
+            antipattern: "Pointing an agent at a 200k-line repo and saying 'add a feature'. It will hallucinate half the architecture."
+          },
+          {
+            title: "Generate the AGENTS.md from the existing repo, don't write it from scratch",
+            why: "An existing codebase already has conventions, patterns, and implicit rules. Your governance file needs to reflect reality, not aspirations.",
+            how: [
+              "Ask the agent to analyze the repo first: 'Scan this codebase and describe the architecture, conventions, patterns, and tech stack. Don't change anything.'",
+              "Review the agent's analysis against your own understanding — it will miss things and get some wrong",
+              "Build AGENTS.md from this analysis: actual linter configs, actual test commands, actual directory purposes",
+              "Include repo-specific gotchas: 'We use a custom ORM wrapper in src/db/', 'All API routes go through the middleware in src/middleware/auth.ts'",
+              "<strong>Shortcut:</strong> use the <code>vibe-coding-bootstrap-existing-repo</code> Claude Code skill (<a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#B07CC6'>github.com/smakam/claude-vibe-coding-skills</a>) — it scans the repo, proposes AGENTS.md, CLAUDE.md, and ai/ tracking files tailored to your detected stack, and requests approval before writing anything"
+            ],
+            antipattern: "Copy-pasting a generic AGENTS.md template. If the rules don't match the actual codebase, the agent will ignore reality and follow the template."
+          },
+          {
+            title: "Scope changes surgically — the codebase is not yours to redesign",
+            why: "Agents love to refactor. On an existing codebase with real users, unsolicited refactoring is a production incident waiting to happen.",
+            how: [
+              "Explicitly constrain: 'Only modify files in src/features/cart/. Do not touch anything else.'",
+              "Add to rules: 'Match existing code style exactly. Do not introduce new patterns unless asked.'",
+              "Add to rules: 'Do not refactor, rename, or reorganize existing code. Only add or modify what's requested.'",
+              "For any change touching more than 3 files, require the agent to list affected files and get approval first"
+            ],
+            antipattern: "Asking for a bug fix and getting back a diff that 'also cleaned up' 12 unrelated files."
+          },
+          {
+            title: "Use the existing test suite as your safety net",
+            why: "The existing tests encode business logic that nobody fully remembers. If they pass after your change, you probably didn't break anything critical.",
+            how: [
+              "Run the full test suite BEFORE any AI changes — establish a green baseline",
+              "After every AI change, run the full suite, not just new tests",
+              "If existing tests fail, the AI broke something — revert, don't 'fix' the test",
+              "If test coverage is low in your target area, write characterization tests first: tests that capture current behavior, right or wrong"
+            ],
+            antipattern: "Letting the agent 'fix' a failing test by changing the assertion. That test was protecting something."
+          },
+          {
+            title: "Read the code the agent will touch — before it touches it",
+            why: "You can't review a diff if you don't understand the before state. On existing codebases, the context around a change matters more than the change itself.",
+            how: [
+              "Before prompting, read the files the agent will modify — understand the current logic",
+              "Look for non-obvious dependencies: event listeners, side effects, implicit contracts between modules",
+              "Check git blame for recent changes — if someone just refactored this area, tread carefully",
+              "Understand the data flow: where does input come from, where does output go, what else depends on this"
+            ],
+            antipattern: "Reviewing a +50/-30 diff without knowing what the original 200 lines were doing."
+          },
+          {
+            title: "Onboard the agent incrementally, not all at once",
+            why: "Dumping the entire codebase into context overwhelms the model. It needs the right slice of context for the specific task.",
+            how: [
+              "Start with AGENTS.md (high-level map) + the specific files relevant to the current task",
+              "Use @file references (Cursor) or explicit file paths (Claude Code) to point at relevant code",
+              "For cross-cutting changes, break into phases: 'First, understand the current auth flow by reading these 3 files'",
+              "Let the agent ask questions: 'Before implementing, what questions do you have about the existing code?'"
+            ],
+            antipattern: "Pasting 5000 lines of code into a prompt and hoping the model figures out what matters."
+          },
+          {
+            title: "Treat legacy patterns as constraints, not problems to solve",
+            why: "The agent will want to modernize everything. But legacy patterns often exist for reasons nobody documented — and changing them has hidden blast radius.",
+            how: [
+              "Explicitly state in rules: 'This codebase uses [pattern X]. Continue using it. Do not suggest alternatives.'",
+              "If you DO want to modernize, do it as a separate dedicated task with its own plan — never mixed with feature work",
+              "Document known technical debt in AGENTS.md so the agent understands it's intentional, not a mistake to fix",
+              "When the agent suggests a 'better' approach, ask: 'What would break if we changed this?' — it usually can't answer"
+            ],
+            antipattern: "Letting the agent introduce async/await into a codebase that's consistently callback-based. Now you have two patterns."
+          }
+        ]
       }
     ]
   },
@@ -383,100 +519,6 @@ const phases = [
           "This is committed to git — it's your institutional memory"
         ],
         antipattern: "Spending 20 minutes re-explaining to a new session why you chose SQLite over Postgres."
-      }
-    ]
-  },
-  {
-    id: "existing", title: "Existing Codebases", subtitle: "The high-stakes game — more to break, more to learn", color: "#B07CC6", icon: "🏗️",
-    practices: [
-      {
-        title: "Audit before you agent — never skip the reconnaissance",
-        why: "On a greenfield project, bad AI output means wasted time. On an existing codebase, it means broken production systems. You need to understand what's there before letting an agent touch it.",
-        how: [
-          "Manually explore: directory structure, entry points, build system, test coverage, CI/CD pipeline",
-          "Identify the tech stack, dependency versions, coding patterns, and naming conventions already in use",
-          "Map the 'danger zones' — auth, payments, migrations, infra — before the agent discovers them the hard way",
-          "Check test coverage: if it's low, write tests for the areas you'll be changing BEFORE you start prompting"
-        ],
-        antipattern: "Pointing an agent at a 200k-line repo and saying 'add a feature'. It will hallucinate half the architecture."
-      },
-      {
-        title: "Generate the AGENTS.md from the existing repo, don't write it from scratch",
-        why: "An existing codebase already has conventions, patterns, and implicit rules. Your governance file needs to reflect reality, not aspirations.",
-        how: [
-          "Ask the agent to analyze the repo first: 'Scan this codebase and describe the architecture, conventions, patterns, and tech stack. Don't change anything.'",
-          "Review the agent's analysis against your own understanding — it will miss things and get some wrong",
-          "Build AGENTS.md from this analysis: actual linter configs, actual test commands, actual directory purposes",
-          "Include repo-specific gotchas: 'We use a custom ORM wrapper in src/db/', 'All API routes go through the middleware in src/middleware/auth.ts'",
-          "<strong>Shortcut:</strong> use the <code>vibe-coding-bootstrap-existing-repo</code> Claude Code skill (<a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#B07CC6'>github.com/smakam/claude-vibe-coding-skills</a>) — it scans the repo, proposes AGENTS.md, CLAUDE.md, and ai/ tracking files tailored to your detected stack, and requests approval before writing anything"
-        ],
-        antipattern: "Copy-pasting a generic AGENTS.md template. If the rules don't match the actual codebase, the agent will ignore reality and follow the template."
-      },
-      {
-        title: "Use PLAN, STATUS, and DECISIONS — they matter more here, not less",
-        why: "On greenfield, a bad plan wastes time. On existing codebases, a bad plan breaks things other teams depend on. The tracking files protect you from drift, rework, and the agent going rogue in unfamiliar territory.",
-        how: [
-          "ai/PLAN.md: Before any feature work, write the plan scoped to the existing architecture — not how you'd build it from scratch, but how it fits into what's already there",
-          "ai/STATUS.md: Update after every step. Critical here because if a session dies mid-feature, the next session needs to know exactly where you left off AND what was already changed",
-          "ai/DECISIONS.md: Even more important on existing codebases — record WHY you chose to extend a pattern vs. introduce a new one, why you touched module X instead of Y",
-          "Add a 'Files Modified' section to STATUS.md — on existing codebases, tracking which files were touched is essential for safe rollback"
-        ],
-        antipattern: "Thinking plan/status/decisions are only for new projects. Existing codebases have more implicit context to lose between sessions, not less."
-      },
-      {
-        title: "Scope changes surgically — the codebase is not yours to redesign",
-        why: "Agents love to refactor. On an existing codebase with real users, unsolicited refactoring is a production incident waiting to happen.",
-        how: [
-          "Explicitly constrain: 'Only modify files in src/features/cart/. Do not touch anything else.'",
-          "Add to rules: 'Match existing code style exactly. Do not introduce new patterns unless asked.'",
-          "Add to rules: 'Do not refactor, rename, or reorganize existing code. Only add or modify what's requested.'",
-          "For any change touching more than 3 files, require the agent to list affected files and get approval first"
-        ],
-        antipattern: "Asking for a bug fix and getting back a diff that 'also cleaned up' 12 unrelated files."
-      },
-      {
-        title: "Use the existing test suite as your safety net",
-        why: "The existing tests encode business logic that nobody fully remembers. If they pass after your change, you probably didn't break anything critical.",
-        how: [
-          "Run the full test suite BEFORE any AI changes — establish a green baseline",
-          "After every AI change, run the full suite, not just new tests",
-          "If existing tests fail, the AI broke something — revert, don't 'fix' the test",
-          "If test coverage is low in your target area, write characterization tests first: tests that capture current behavior, right or wrong"
-        ],
-        antipattern: "Letting the agent 'fix' a failing test by changing the assertion. That test was protecting something."
-      },
-      {
-        title: "Read the code the agent will touch — before it touches it",
-        why: "You can't review a diff if you don't understand the before state. On existing codebases, the context around a change matters more than the change itself.",
-        how: [
-          "Before prompting, read the files the agent will modify — understand the current logic",
-          "Look for non-obvious dependencies: event listeners, side effects, implicit contracts between modules",
-          "Check git blame for recent changes — if someone just refactored this area, tread carefully",
-          "Understand the data flow: where does input come from, where does output go, what else depends on this"
-        ],
-        antipattern: "Reviewing a +50/-30 diff without knowing what the original 200 lines were doing."
-      },
-      {
-        title: "Onboard the agent incrementally, not all at once",
-        why: "Dumping the entire codebase into context overwhelms the model. It needs the right slice of context for the specific task.",
-        how: [
-          "Start with AGENTS.md (high-level map) + the specific files relevant to the current task",
-          "Use @file references (Cursor) or explicit file paths (Claude Code) to point at relevant code",
-          "For cross-cutting changes, break into phases: 'First, understand the current auth flow by reading these 3 files'",
-          "Let the agent ask questions: 'Before implementing, what questions do you have about the existing code?'"
-        ],
-        antipattern: "Pasting 5000 lines of code into a prompt and hoping the model figures out what matters."
-      },
-      {
-        title: "Treat legacy patterns as constraints, not problems to solve",
-        why: "The agent will want to modernize everything. But legacy patterns often exist for reasons nobody documented — and changing them has hidden blast radius.",
-        how: [
-          "Explicitly state in rules: 'This codebase uses [pattern X]. Continue using it. Do not suggest alternatives.'",
-          "If you DO want to modernize, do it as a separate dedicated task with its own plan — never mixed with feature work",
-          "Document known technical debt in AGENTS.md so the agent understands it's intentional, not a mistake to fix",
-          "When the agent suggests a 'better' approach, ask: 'What would break if we changed this?' — it usually can't answer"
-        ],
-        antipattern: "Letting the agent introduce async/await into a codebase that's consistently callback-based. Now you have two patterns."
       }
     ]
   },
@@ -750,7 +792,40 @@ const loopSteps = [
 ];
 
 let activePhase = "before";
+let activeSubTab = {};
 let expandedPractice = null;
+
+function renderPractices(practices, phase, globalIdx) {
+  return practices.map((pr, idx) => {
+    const num = globalIdx + idx;
+    const key = `${activePhase}-${num}`;
+    const isExpanded = expandedPractice === key;
+    return `
+      <div class="practice ${isExpanded ? 'expanded' : ''}"
+           style="${isExpanded ? 'border-color:' + phase.color + '40' : ''}">
+        <button class="practice-header" onclick="togglePractice('${key}')">
+          <span class="practice-num" style="color:${phase.color}">${String(num+1).padStart(2,'0')}</span>
+          <span class="practice-title">${pr.title}</span>
+          <span class="practice-arrow">›</span>
+        </button>
+        <div class="practice-body">
+          <div class="section">
+            <div class="section-label" style="color:${phase.color}">Why</div>
+            <div>${pr.why}</div>
+          </div>
+          <div class="section">
+            <div class="section-label" style="color:${phase.color}">How</div>
+            ${pr.how.map(h => `<div class="how-item"><span class="how-arrow">→</span><span>${h}</span></div>`).join("")}
+          </div>
+          <div class="antipattern">
+            <span class="antipattern-label">⚠ Don't </span>
+            <span class="antipattern-text">${pr.antipattern}</span>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
 
 function render() {
   // Tabs
@@ -769,39 +844,43 @@ function render() {
   const contentEl = document.getElementById("phaseContent");
   contentEl.style.borderTopColor = phase.color;
 
-  contentEl.innerHTML = `
-    <div class="phase-subtitle">${phase.subtitle}</div>
-    <div class="practices">
-      ${phase.practices.map((pr, idx) => {
-        const key = `${activePhase}-${idx}`;
-        const isExpanded = expandedPractice === key;
-        return `
-          <div class="practice ${isExpanded ? 'expanded' : ''}"
-               style="${isExpanded ? 'border-color:' + phase.color + '40' : ''}">
-            <button class="practice-header" onclick="togglePractice('${key}')">
-              <span class="practice-num" style="color:${phase.color}">${String(idx+1).padStart(2,'0')}</span>
-              <span class="practice-title">${pr.title}</span>
-              <span class="practice-arrow">›</span>
-            </button>
-            <div class="practice-body">
-              <div class="section">
-                <div class="section-label" style="color:${phase.color}">Why</div>
-                <div>${pr.why}</div>
-              </div>
-              <div class="section">
-                <div class="section-label" style="color:${phase.color}">How</div>
-                ${pr.how.map(h => `<div class="how-item"><span class="how-arrow">→</span><span>${h}</span></div>`).join("")}
-              </div>
-              <div class="antipattern">
-                <span class="antipattern-label">⚠ Don't </span>
-                <span class="antipattern-text">${pr.antipattern}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join("")}
-    </div>
-  `;
+  if (phase.sections) {
+    // Sectioned phase with sub-tabs
+    const currentSub = activeSubTab[phase.id] || phase.sections[0].label;
+    const subTabsHtml = `<div class="sub-tabs">
+      ${phase.sections.map(s => `
+        <button class="sub-tab ${currentSub === s.label ? 'active' : ''}"
+                style="${currentSub === s.label ? 'background:' + phase.color + '22; border-color:' + phase.color : ''}"
+                onclick="setSubTab('${phase.id}', '${s.label}')">
+          ${s.label}
+        </button>
+      `).join("")}
+    </div>`;
+
+    const activeSection = phase.sections.find(s => s.label === currentSub) || phase.sections[0];
+    // Calculate global index offset for numbering
+    let globalIdx = 0;
+    for (const s of phase.sections) {
+      if (s.label === activeSection.label) break;
+      globalIdx += s.practices.length;
+    }
+
+    contentEl.innerHTML = `
+      <div class="phase-subtitle">${phase.subtitle}</div>
+      ${subTabsHtml}
+      <div class="practices">
+        ${renderPractices(activeSection.practices, phase, globalIdx)}
+      </div>
+    `;
+  } else {
+    // Standard flat phase
+    contentEl.innerHTML = `
+      <div class="phase-subtitle">${phase.subtitle}</div>
+      <div class="practices">
+        ${renderPractices(phase.practices, phase, 0)}
+      </div>
+    `;
+  }
 
   // Loop steps
   document.getElementById("loopSteps").innerHTML = loopSteps.map(s => `
@@ -814,6 +893,12 @@ function render() {
 
 function setPhase(id) {
   activePhase = id;
+  expandedPractice = null;
+  render();
+}
+
+function setSubTab(phaseId, label) {
+  activeSubTab[phaseId] = label;
   expandedPractice = null;
   render();
 }
