@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibe Coding Best Practices — Operator Playbook</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    min-height: 100vh;
+    background: #0D1117;
+    color: #C9D1D9;
+    font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .header {
+    padding: 32px 24px 24px;
+    border-bottom: 1px solid #21262D;
+  }
+  .header-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #8B949E;
+    margin-bottom: 8px;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    color: #F0F6FC;
+    line-height: 1.3;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: #8B949E;
+    margin-top: 8px;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 2px;
+    padding: 16px 24px 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #21262D #0D1117;
+  }
+  .tabs::-webkit-scrollbar { height: 4px; }
+  .tabs::-webkit-scrollbar-track { background: #0D1117; }
+  .tabs::-webkit-scrollbar-thumb { background: #21262D; border-radius: 2px; }
+  .tab {
+    flex: 1 0 auto;
+    min-width: 72px;
+    max-width: 120px;
+    padding: 12px 8px;
+    background: transparent;
+    border: none;
+    border-top: 2px solid transparent;
+    color: #8B949E;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 400;
+    text-align: center;
+    border-radius: 6px 6px 0 0;
+    transition: all 0.15s ease;
+  }
+  .tab.active {
+    background: #161B22;
+    color: #F0F6FC;
+    font-weight: 600;
+  }
+  .tab-icon { font-size: 18px; margin-bottom: 4px; }
+  .tab-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .phase-content {
+    padding: 20px 24px;
+    background: #161B22;
+    margin: 0 24px;
+    border-radius: 0 0 8px 8px;
+    margin-bottom: 24px;
+  }
+  .phase-subtitle {
+    font-size: 13px;
+    color: #8B949E;
+    margin-bottom: 16px;
+  }
+
+  .practices { display: flex; flex-direction: column; gap: 8px; }
+
+  .practice {
+    background: #0D1117;
+    border: 1px solid #21262D;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.15s ease;
+  }
+  .practice.expanded {
+    background: #1C2128;
+  }
+
+  .practice-header {
+    width: 100%;
+    padding: 14px 16px;
+    background: transparent;
+    border: none;
+    color: #F0F6FC;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    line-height: 1.4;
+  }
+  .practice-num {
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+    width: 20px;
+  }
+  .practice-title { flex: 1; }
+  .practice-arrow {
+    color: #8B949E;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: transform 0.15s ease;
+  }
+  .practice.expanded .practice-arrow { transform: rotate(90deg); }
+
+  .practice-body {
+    display: none;
+    padding: 0 16px 16px 48px;
+    font-size: 12.5px;
+    line-height: 1.7;
+  }
+  .practice.expanded .practice-body { display: block; }
+
+  .section-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .section { margin-bottom: 14px; }
+
+  .how-item {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .how-arrow { color: #484F58; flex-shrink: 0; }
+
+  .antipattern {
+    background: #1A0E0E;
+    border: 1px solid #3D1515;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .antipattern-label {
+    color: #F85149;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .antipattern-text { color: #C9A8A8; }
+
+  .quick-ref {
+    padding: 0 24px 32px;
+  }
+  .quick-ref-box {
+    background: #161B22;
+    border: 1px solid #21262D;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .quick-ref-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8B949E;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .loop-step {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 12px;
+    line-height: 1.8;
+  }
+  .loop-num {
+    font-weight: 700;
+    width: 18px;
+    text-align: right;
+    flex-shrink: 0;
+    font-size: 11px;
+  }
+
+  .phase-panel { display: none; }
+  .phase-panel.active { display: block; }
+
+  @media (max-width: 500px) {
+    .header h1 { font-size: 20px; }
+    .tab { padding: 10px 4px; font-size: 10px; }
+    .tab-icon { font-size: 16px; }
+    .practice-header { font-size: 12px; padding: 12px 12px; }
+    .practice-body { padding-left: 36px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">Operator Playbook</div>
+  <h1>Vibe Coding<br>Best Practices</h1>
+  <div class="header-sub">Tool-agnostic. For the human, not the agent.</div>
+</div>
+
+<div class="tabs" id="tabs"></div>
+
+<div class="phase-content" id="phaseContent"></div>
+
+<div class="quick-ref">
+  <div class="quick-ref-box">
+    <div class="quick-ref-label">Quick Ref — Your Loop</div>
+    <div id="loopSteps"></div>
+  </div>
+</div>
+
+<script>
+const phases = [
+  {
+    id: "before", title: "Before You Start", subtitle: "Set yourself up to win", color: "#E8B931", icon: "🎯",
+    practices: [
+      {
+        title: "Write the PRD first, not the prompt",
+        why: "Your AI agent is a fast but forgetful junior dev. Without a spec, it will make random architectural choices you'll spend hours undoing.",
+        how: [
+          "Write what the system does, who uses it, core user flows, and data model — even if rough",
+          "For UI work, sketch wireframes (hand-drawn is fine — agents interpret screenshots well)",
+          "Define your tech stack and specific versions (models may have stale knowledge of newer versions)",
+          "Commit the PRD to the repo so every agent session has access to it"
+        ],
+        antipattern: "Jumping straight into prompting without knowing what you're building. You'll 'vibe' yourself into a rewrite."
+      },
+      {
+        title: "Bootstrap governance files before writing code",
+        why: "Every agent session starts from zero. Without persistent context files, you're re-onboarding a new hire every time. This applies equally to new projects and existing codebases.",
+        how: [
+          "Create AGENTS.md with coding conventions, workflow rules, security guardrails, and repo map",
+          "Set up ai/PLAN.md, ai/STATUS.md, ai/DECISIONS.md for task tracking — these are your session-to-session memory",
+          "Add tool-specific shims (CLAUDE.md, .cursor/rules) that point back to AGENTS.md",
+          "For existing codebases: generate these from the repo (see Existing Codebases tab). For new projects: define them upfront.",
+          "<strong>Use skills to automate this:</strong> the <code>vibe-coding-new-project</code> skill runs a kickoff interview and auto-generates all governance files for new projects; the <code>vibe-coding-bootstrap-existing-repo</code> skill scans an existing repo and generates files matched to your actual stack. Both at <a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#4A90D9'>github.com/smakam/claude-vibe-coding-skills</a>"
+        ],
+        antipattern: "Maintaining separate rule files per tool that drift out of sync. One canonical source, multiple pointers."
+      },
+      {
+        title: "Pick a simple, well-known tech stack",
+        why: "Models generate dramatically better code for popular frameworks they've seen extensively in training data. Exotic stacks = more hallucinations.",
+        how: [
+          "Ask the model which version of a framework it knows before using it",
+          "If you must use a newer version, paste the relevant docs into context",
+          "Prefer standard patterns the model has seen millions of times",
+          "Minimize dependencies — each one is a potential hallucination surface"
+        ],
+        antipattern: "Using the latest bleeding-edge release of everything and expecting the model to know it."
+      }
+    ]
+  },
+  {
+    id: "during", title: "During Development", subtitle: "How to drive the agent effectively", color: "#4A90D9", icon: "⚡",
+    practices: [
+      {
+        title: "Decompose ruthlessly — one concern per prompt",
+        why: "Large prompts produce large, messy, hard-to-review diffs. Small prompts produce surgical changes you can verify and commit.",
+        how: [
+          "Break features into the smallest possible independent steps",
+          "Each prompt should touch 1–2 files ideally, 3–4 max",
+          "If a task has more than 3 steps, write it up in ai/PLAN.md first",
+          "Use the pattern: scaffold → implement → test → optimize"
+        ],
+        antipattern: "'Build me a full e-commerce checkout flow' as a single prompt. You'll get a fragile monolith."
+      },
+      {
+        title: "Ask for options before committing to an approach",
+        why: "Once the agent starts writing code, it's biased toward its own approach. Get the thinking out first.",
+        how: [
+          "Prompt: 'Give me 3 approaches for X, starting with the simplest. Explain tradeoffs. Don't write code.'",
+          "For architectural decisions, use 'Ask mode' or conversation before 'Code mode'",
+          "Record the chosen approach and reasoning in ai/DECISIONS.md",
+          "This takes 30 seconds and saves hours of rework"
+        ],
+        antipattern: "Letting the agent pick the architecture. It optimizes for 'looks plausible' not 'right for your system'."
+      },
+      {
+        title: "Enforce explain-before-execute",
+        why: "Agents are overconfident interns. They'll refactor your entire codebase if you don't constrain them.",
+        how: [
+          "Add to your rules: 'Explain what you'll do and get confirmation before coding'",
+          "Add: 'Prefer minimal diffs — only change what's necessary'",
+          "Add: 'Do not refactor existing code unless explicitly asked'",
+          "Add: 'Keep it simple. Implement the minimum viable version.'"
+        ],
+        antipattern: "Giving the agent free rein and reviewing after. By then, it's touched 15 files and you can't tell what happened."
+      },
+      {
+        title: "Manage context like a budget",
+        why: "Context windows are finite. A bloated context leads to worse output, ignored instructions, and hallucinations.",
+        how: [
+          "Start a fresh chat for each feature — don't carry unrelated context",
+          "Use file-scoped rules (e.g., Cursor lets rules apply only to *.ts files)",
+          "Reference docs by path ('see docs/ARCHITECTURE.md') instead of pasting them in",
+          "If a session gets long, ask for a summary, then start fresh with that summary + STATUS.md"
+        ],
+        antipattern: "One mega-session where you build an entire feature. By prompt 30, the agent has forgotten prompt 3."
+      },
+      {
+        title: "Commit before and after every AI interaction",
+        why: "Git is your undo button. Without a clean checkpoint, one bad AI suggestion can corrupt your entire working state.",
+        how: [
+          "Commit before prompting — create a known-good restore point",
+          "Review the diff after each AI change (not just the new code — understand what changed)",
+          "Commit with descriptive messages: 'feat: add cart API endpoints' not 'AI changes'",
+          "Use feature branches — never let agents work directly on main"
+        ],
+        antipattern: "Accepting 10 rounds of AI changes without committing, then discovering something broke 6 rounds ago."
+      },
+      {
+        title: "Run tests after every change, not at the end",
+        why: "AI-generated code introduces subtle bugs. Catching them immediately is 10x easier than after 20 more changes are layered on top.",
+        how: [
+          "Add to workflow rules: 'Run the test suite after every change. Stop if tests fail.'",
+          "Write tests first (TDD) — they become the spec the agent implements against",
+          "Prefer integration/e2e tests over units for vibe-coded projects (they catch more real bugs)",
+          "If the agent 'fixes' a test by weakening the assertion, reject it immediately"
+        ],
+        antipattern: "Building 5 features, then running tests, then spending 3 hours debugging cascading failures."
+      }
+    ]
+  },
+  {
+    id: "review", title: "Review & Verification", subtitle: "Trust but verify — always verify", color: "#D95B43", icon: "🔍",
+    practices: [
+      {
+        title: "Review AI output like a pull request, not a gift",
+        why: "25–70% of AI-generated code contains vulnerabilities. 'It works' is not the same as 'it's correct'.",
+        how: [
+          "Read every diff line by line — don't just check if it runs",
+          "Look for: hallucinated APIs, hardcoded secrets, missing error handling, skipped edge cases",
+          "Check for unnecessary complexity or over-engineering the agent snuck in",
+          "If you can't understand what the code does, don't ship it"
+        ],
+        antipattern: "'The tests pass so it's fine.' That's how you end up with an SQL injection in production."
+      },
+      {
+        title: "Never let AI touch security-critical code unsupervised",
+        why: "Models optimize for 'looks correct' not 'is secure'. Auth, payments, and data handling need human eyes.",
+        how: [
+          "Mark danger zones in AGENTS.md: auth, billing, migrations, infrastructure, CI/CD",
+          "Rule: 'Do NOT modify files in these directories without explicit approval'",
+          "Run SAST on every AI-generated change: Semgrep for multi-language pattern analysis, Bandit for Python, CodeQL for deep dataflow analysis, Snyk for dependency vulnerabilities, and a secrets scanner (truffleHog, gitleaks) on every commit",
+          "Include security requirements in prompts: 'Add input validation, parameterized queries, CSRF protection, and follow OWASP Top 10 guidelines'",
+          "Store team-specific security requirements in docs/code-review-standards.md and reference it in every code review agent invocation — this is how you make security checks consistently enforced, not ad-hoc"
+        ],
+        antipattern: "Letting the agent scaffold your auth system and deploying it without a security review."
+      },
+      {
+        title: "Track decisions so agents don't re-litigate them",
+        why: "Without a decision log, your next agent session might undo architectural choices you carefully made.",
+        how: [
+          "Record every significant decision in ai/DECISIONS.md with date, context, alternatives, and reasoning",
+          "Add to rules: 'Read ai/DECISIONS.md before proposing architectural changes'",
+          "Add: 'If you want to contradict a prior decision, STOP and explain why'",
+          "This is committed to git — it's your institutional memory"
+        ],
+        antipattern: "Spending 20 minutes re-explaining to a new session why you chose SQLite over Postgres."
+      }
+    ]
+  },
+  {
+    id: "existing", title: "Existing Codebases", subtitle: "The high-stakes game — more to break, more to learn", color: "#B07CC6", icon: "🏗️",
+    practices: [
+      {
+        title: "Audit before you agent — never skip the reconnaissance",
+        why: "On a greenfield project, bad AI output means wasted time. On an existing codebase, it means broken production systems. You need to understand what's there before letting an agent touch it.",
+        how: [
+          "Manually explore: directory structure, entry points, build system, test coverage, CI/CD pipeline",
+          "Identify the tech stack, dependency versions, coding patterns, and naming conventions already in use",
+          "Map the 'danger zones' — auth, payments, migrations, infra — before the agent discovers them the hard way",
+          "Check test coverage: if it's low, write tests for the areas you'll be changing BEFORE you start prompting"
+        ],
+        antipattern: "Pointing an agent at a 200k-line repo and saying 'add a feature'. It will hallucinate half the architecture."
+      },
+      {
+        title: "Generate the AGENTS.md from the existing repo, don't write it from scratch",
+        why: "An existing codebase already has conventions, patterns, and implicit rules. Your governance file needs to reflect reality, not aspirations.",
+        how: [
+          "Ask the agent to analyze the repo first: 'Scan this codebase and describe the architecture, conventions, patterns, and tech stack. Don't change anything.'",
+          "Review the agent's analysis against your own understanding — it will miss things and get some wrong",
+          "Build AGENTS.md from this analysis: actual linter configs, actual test commands, actual directory purposes",
+          "Include repo-specific gotchas: 'We use a custom ORM wrapper in src/db/', 'All API routes go through the middleware in src/middleware/auth.ts'",
+          "<strong>Shortcut:</strong> use the <code>vibe-coding-bootstrap-existing-repo</code> Claude Code skill (<a href='https://github.com/smakam/claude-vibe-coding-skills' target='_blank' style='color:#B07CC6'>github.com/smakam/claude-vibe-coding-skills</a>) — it scans the repo, proposes AGENTS.md, CLAUDE.md, and ai/ tracking files tailored to your detected stack, and requests approval before writing anything"
+        ],
+        antipattern: "Copy-pasting a generic AGENTS.md template. If the rules don't match the actual codebase, the agent will ignore reality and follow the template."
+      },
+      {
+        title: "Use PLAN, STATUS, and DECISIONS — they matter more here, not less",
+        why: "On greenfield, a bad plan wastes time. On existing codebases, a bad plan breaks things other teams depend on. The tracking files protect you from drift, rework, and the agent going rogue in unfamiliar territory.",
+        how: [
+          "ai/PLAN.md: Before any feature work, write the plan scoped to the existing architecture — not how you'd build it from scratch, but how it fits into what's already there",
+          "ai/STATUS.md: Update after every step. Critical here because if a session dies mid-feature, the next session needs to know exactly where you left off AND what was already changed",
+          "ai/DECISIONS.md: Even more important on existing codebases — record WHY you chose to extend a pattern vs. introduce a new one, why you touched module X instead of Y",
+          "Add a 'Files Modified' section to STATUS.md — on existing codebases, tracking which files were touched is essential for safe rollback"
+        ],
+        antipattern: "Thinking plan/status/decisions are only for new projects. Existing codebases have more implicit context to lose between sessions, not less."
+      },
+      {
+        title: "Scope changes surgically — the codebase is not yours to redesign",
+        why: "Agents love to refactor. On an existing codebase with real users, unsolicited refactoring is a production incident waiting to happen.",
+        how: [
+          "Explicitly constrain: 'Only modify files in src/features/cart/. Do not touch anything else.'",
+          "Add to rules: 'Match existing code style exactly. Do not introduce new patterns unless asked.'",
+          "Add to rules: 'Do not refactor, rename, or reorganize existing code. Only add or modify what's requested.'",
+          "For any change touching more than 3 files, require the agent to list affected files and get approval first"
+        ],
+        antipattern: "Asking for a bug fix and getting back a diff that 'also cleaned up' 12 unrelated files."
+      },
+      {
+        title: "Use the existing test suite as your safety net",
+        why: "The existing tests encode business logic that nobody fully remembers. If they pass after your change, you probably didn't break anything critical.",
+        how: [
+          "Run the full test suite BEFORE any AI changes — establish a green baseline",
+          "After every AI change, run the full suite, not just new tests",
+          "If existing tests fail, the AI broke something — revert, don't 'fix' the test",
+          "If test coverage is low in your target area, write characterization tests first: tests that capture current behavior, right or wrong"
+        ],
+        antipattern: "Letting the agent 'fix' a failing test by changing the assertion. That test was protecting something."
+      },
+      {
+        title: "Read the code the agent will touch — before it touches it",
+        why: "You can't review a diff if you don't understand the before state. On existing codebases, the context around a change matters more than the change itself.",
+        how: [
+          "Before prompting, read the files the agent will modify — understand the current logic",
+          "Look for non-obvious dependencies: event listeners, side effects, implicit contracts between modules",
+          "Check git blame for recent changes — if someone just refactored this area, tread carefully",
+          "Understand the data flow: where does input come from, where does output go, what else depends on this"
+        ],
+        antipattern: "Reviewing a +50/-30 diff without knowing what the original 200 lines were doing."
+      },
+      {
+        title: "Onboard the agent incrementally, not all at once",
+        why: "Dumping the entire codebase into context overwhelms the model. It needs the right slice of context for the specific task.",
+        how: [
+          "Start with AGENTS.md (high-level map) + the specific files relevant to the current task",
+          "Use @file references (Cursor) or explicit file paths (Claude Code) to point at relevant code",
+          "For cross-cutting changes, break into phases: 'First, understand the current auth flow by reading these 3 files'",
+          "Let the agent ask questions: 'Before implementing, what questions do you have about the existing code?'"
+        ],
+        antipattern: "Pasting 5000 lines of code into a prompt and hoping the model figures out what matters."
+      },
+      {
+        title: "Treat legacy patterns as constraints, not problems to solve",
+        why: "The agent will want to modernize everything. But legacy patterns often exist for reasons nobody documented — and changing them has hidden blast radius.",
+        how: [
+          "Explicitly state in rules: 'This codebase uses [pattern X]. Continue using it. Do not suggest alternatives.'",
+          "If you DO want to modernize, do it as a separate dedicated task with its own plan — never mixed with feature work",
+          "Document known technical debt in AGENTS.md so the agent understands it's intentional, not a mistake to fix",
+          "When the agent suggests a 'better' approach, ask: 'What would break if we changed this?' — it usually can't answer"
+        ],
+        antipattern: "Letting the agent introduce async/await into a codebase that's consistently callback-based. Now you have two patterns."
+      }
+    ]
+  },
+  {
+    id: "debug", title: "Debugging & Recovery", subtitle: "When the agent is stuck, broken, or going in circles", color: "#E07C4F", icon: "🔧",
+    practices: [
+      {
+        title: "Recognize the loop — 3 failed attempts means change strategy",
+        why: "Agents don't get frustrated, but they also don't get smarter on retry. If the same approach failed twice, the third attempt will produce the same wrong answer with more confidence.",
+        how: [
+          "Rule of 3: if 3 prompts haven't solved it, STOP. Don't keep rephrasing the same ask.",
+          "Diagnose first: 'Explain what you think is happening and why your fix didn't work. Don't write code.'",
+          "Change the angle: provide more context, simplify the problem, or break it into a smaller piece",
+          "Last resort: read the code yourself. 15 minutes of reading often beats 45 minutes of re-prompting."
+        ],
+        antipattern: "Prompt #8 of 'try again, that didn't work' while the agent confidently produces the same bug with different variable names."
+      },
+      {
+        title: "Give the agent the error, not just the symptom",
+        why: "Agents are surprisingly good at debugging when given precise error information. They're terrible when given 'it doesn't work'.",
+        how: [
+          "Always paste the full error message, stack trace, and relevant logs",
+          "Include what you expected vs. what actually happened",
+          "If it's a UI bug, describe or screenshot the exact behavior",
+          "Specify the exact command and environment: 'Running npm test on Node 20, getting this error...'"
+        ],
+        antipattern: "'The login page is broken, fix it.' Give the agent the 404 response, the network tab output, and the server log."
+      },
+      {
+        title: "Use a fresh session when context is poisoned",
+        why: "After several failed attempts, the conversation history is full of wrong approaches. The agent weighs its own prior (incorrect) outputs heavily and keeps circling back to them.",
+        how: [
+          "Start a new chat/session with a clean slate",
+          "Bring forward only: the goal, the current state (STATUS.md), and the specific error",
+          "Do NOT paste the failed attempts — they pollute context and bias the agent toward the same mistakes",
+          "Sometimes switching tools helps: if Claude Code is stuck, try the same prompt in Cursor or vice versa"
+        ],
+        antipattern: "A 50-message thread where 40 messages are failed attempts. The agent can't see the forest for the trees."
+      },
+      {
+        title: "Know your rollback options cold",
+        why: "When things go wrong on an existing codebase, speed of recovery matters. Fumbling with git under pressure turns a 5-minute fix into a 2-hour incident.",
+        how: [
+          "git stash: quick undo for uncommitted AI changes",
+          "git checkout -- file: revert specific files to last commit",
+          "git reset --hard HEAD~N: nuclear option to roll back N commits",
+          "If you followed 'commit after every step', you always have a clean restore point within the last 10 minutes of work"
+        ],
+        antipattern: "No commits for the last hour, agent has modified 8 files, something's broken, and you don't know which change caused it."
+      },
+      {
+        title: "Use a different model for debugging than for generating",
+        why: "The model that wrote the bug is biased toward its own code. A different model (or the same model in a fresh session) brings fresh eyes, just like asking a colleague.",
+        how: [
+          "Generate code in Cursor with Sonnet, debug the tricky issue in Claude Code with Opus",
+          "Or: ask Claude Code to review code that Cursor generated, and vice versa",
+          "For really stubborn bugs, explain the full situation to a fresh session: 'Here's the code, here's the test, here's the failure. What am I missing?'",
+          "This cross-pollination is one of the biggest advantages of being tool-agnostic"
+        ],
+        antipattern: "Asking the same model in the same session to fix its own bug for the 5th time."
+      }
+    ]
+  },
+  {
+    id: "testing", title: "Testing & Code Review", subtitle: "Using AI for verification, not just generation", color: "#4ECDC4", icon: "✅",
+    practices: [
+      {
+        title: "Use Claude for development & unit testing, Codex for code review — don't use the same tool for both",
+        why: "A model that wrote the code has a bias toward its own output. It will rationalize its choices rather than critique them. Using Claude for development and unit testing, then Codex as your code review agent, gives you genuine independence — different training distributions, different blind spots — and materially broader coverage than any single-model workflow.",
+        how: [
+          "<strong>Development & unit tests → Claude Code:</strong> excels at feature implementation, iterating on logic, and generating unit tests that exercise the code it just wrote",
+          "<strong>Code review → Codex:</strong> run Codex (OpenAI's CLI agent) in a fresh context against your committed diff — different model, genuinely independent perspective, catches issues Claude normalized",
+          "The handoff: after Claude Code generates and tests the code, commit it, then invoke Codex: 'Review this PR diff against docs/code-review-standards.md. Flag bugs, security issues, and standards violations.'",
+          "For CI integration: wire Codex review as a required PR check alongside your SAST tooling — human review is the final gate",
+          "This pattern also works in reverse for debugging: if Codex-generated code has a subtle bug, Claude often spots it faster because it comes in cold"
+        ],
+        antipattern: "Using the same model session for both writing and reviewing the same code. You're asking the model to audit its own work — it'll find what it expects to find."
+      },
+      {
+        title: "Use AI for code review — it's one of the highest-value applications",
+        why: "AI is better at reviewing code than writing it. It can spot patterns, inconsistencies, and vulnerabilities across large diffs faster than a human, and it doesn't get tired.",
+        how: [
+          "After generating code, open a NEW session and ask: 'Review this code for bugs, security issues, and edge cases. Be critical.'",
+          "Use a different model or tool for review than you used for generation — fresh perspective",
+          "For PRs: paste the diff and ask 'What could go wrong with this change? What did I miss?'",
+          "Integrate AI review into CI: tools like CodeRabbit, Ellipsis, or custom prompts in your pipeline"
+        ],
+        antipattern: "Only using AI to write code, never to review it. Review is where AI delivers the most reliable value."
+      },
+      {
+        title: "Define team code review standards in docs/code-review-standards.md — that's the review agent's system prompt",
+        why: "Your code review agent is only as good as its instructions. Without explicit team standards, it falls back to generic best practices that may not match your stack, risk profile, or architectural decisions. A dedicated standards file is what turns AI review from 'generic linter feedback' into 'your team's senior engineer reviewing this diff'.",
+        how: [
+          "Create <code>docs/code-review-standards.md</code> (committed to the repo) — this is the file you hand to the review agent every time",
+          "Include: team naming conventions, approved architectural patterns, banned anti-patterns, performance thresholds, and decisions from ai/DECISIONS.md that must not be reversed",
+          "<strong>SAST requirements:</strong> specify which tools to run (e.g., Semgrep, Bandit, CodeQL, Snyk), which rule sets are mandatory, and severity thresholds that block merge — the review agent should verify these ran and passed",
+          "<strong>Security best practices:</strong> list your domain-specific requirements — OWASP Top 10 checks, secrets/credential detection, auth & authz requirements, input validation rules, dependency vulnerability policy",
+          "Reference it in AGENTS.md: 'For code review, apply docs/code-review-standards.md as the review checklist'",
+          "Use it explicitly in your review prompt: 'Review this diff. Apply standards from docs/code-review-standards.md. Flag any SAST violations, security issues, or standards deviations with severity (blocker / major / minor).'"
+        ],
+        antipattern: "Embedding review standards in ad-hoc prompts or relying on reviewer muscle memory. Standards that aren't in a file aren't consistently applied — and they're invisible to the AI agent."
+      },
+      {
+        title: "API testing — the sweet spot for AI-generated tests",
+        why: "API tests are highly structured (request → response → assert), follow predictable patterns, and agents generate them well. This is where vibe coding your test suite pays off the most.",
+        how: [
+          "Provide the agent with your API spec or route definitions and ask it to generate tests for all endpoints",
+          "Cover: happy path, validation errors, auth failures, edge cases (empty body, malformed input, missing fields)",
+          "Include integration tests that chain API calls: create → read → update → delete",
+          "Run generated tests against the actual API (not mocks) to catch real integration issues"
+        ],
+        antipattern: "Hand-writing 200 API test cases when the agent can generate them in 5 minutes with better coverage."
+      },
+      {
+        title: "Web/UI testing — effective but needs more guidance",
+        why: "Agents can generate Playwright, Cypress, or Selenium tests, but UI tests are more fragile and context-dependent. The agent needs to see the actual UI structure to write reliable selectors.",
+        how: [
+          "Share the component source code or rendered HTML — the agent needs to know the DOM structure",
+          "Specify your selector strategy upfront: 'Use data-testid attributes, not CSS classes or XPath'",
+          "Focus on user flows, not implementation: 'Test that a user can log in, add an item to cart, and check out'",
+          "Generate the test, run it, share the failure output with the agent — UI tests always need iteration"
+        ],
+        antipattern: "Expecting the agent to write a perfect Playwright test without seeing the page structure. The selectors will be hallucinated."
+      },
+      {
+        title: "Mobile app testing — the hardest surface, manage expectations",
+        why: "Mobile testing (Appium, Detox, XCTest, Espresso) is the weakest area for AI because the feedback loop is slow, emulators are complex, and the agent can't see the screen.",
+        how: [
+          "Start with unit tests for business logic — these are platform-independent and agents handle them well",
+          "For UI tests, provide the view hierarchy or component tree explicitly",
+          "Use Detox (React Native) or Espresso/XCTest (native) — agents know these better than Appium",
+          "Keep mobile test expectations modest: generate the scaffolding and happy-path tests, then hand-tune selectors and waits yourself"
+        ],
+        antipattern: "Expecting the agent to write end-to-end Appium tests that work on first run. Mobile test tooling is too finicky — plan for manual iteration."
+      },
+      {
+        title: "The AI code review checklist — what to scan for every time",
+        why: "After enough reviews, you'll notice the same categories of AI mistakes. Having a checklist makes review systematic instead of hoping you catch things. SAST tools catch pattern-level vulnerabilities; this checklist catches logic and design issues SAST misses.",
+        how: [
+          "<strong>SAST first:</strong> run Semgrep, Bandit (Python), CodeQL, or Snyk on every AI-generated diff before human review — AI code frequently contains vulnerability patterns (injections, insecure defaults, unsafe deserialization) that look syntactically valid and pass manual inspection",
+          "<strong>Security (OWASP Top 10 lens):</strong> hardcoded secrets or API keys? SQL/command injection? broken auth or missing authz checks? unvalidated/unsanitized input? insecure direct object references? CORS too permissive? sensitive data logged or exposed?",
+          "<strong>Dependency & supply chain:</strong> new packages introduced? are they well-maintained and not known-vulnerable? pin exact versions — AI often adds latest-and-greatest packages that haven't been vetted",
+          "<strong>Correctness:</strong> hallucinated APIs or imports? logic that looks right but handles edge cases wrong? off-by-one errors? race conditions in async code?",
+          "<strong>Style:</strong> matches existing codebase patterns? no unnecessary refactoring? no new architectural patterns introduced without a decision record?",
+          "<strong>Completeness:</strong> error handling present and specific (not bare catch)? loading states? empty states? what happens when the network fails or a third-party API is down?"
+        ],
+        antipattern: "Skipping SAST and doing only a human review pass. Human reviewers consistently miss injection and insecure-default vulnerabilities that static analysis catches in seconds."
+      }
+    ]
+  },
+  {
+    id: "team", title: "Team & Operations", subtitle: "Scaling vibe coding beyond yourself", color: "#5B8AD9", icon: "👥",
+    practices: [
+      {
+        title: "AGENTS.md is your team's shared contract — treat it like a design doc",
+        why: "When multiple devs use AI agents on the same repo, inconsistent rules produce inconsistent code. One dev's agent introduces pattern A, another's introduces pattern B. Now you have tech debt nobody asked for.",
+        how: [
+          "AGENTS.md is a team artifact — changes go through PR review like any other architectural decision",
+          "Include team conventions: naming, file structure, import ordering, error handling patterns",
+          "All tool-specific config (.cursor/rules, CLAUDE.md) must reference the shared AGENTS.md",
+          "Onboard new team members to the AGENTS.md workflow just like you'd onboard them to your CI/CD pipeline"
+        ],
+        antipattern: "Every dev has their own .cursorrules with different conventions. The codebase becomes a patchwork of styles."
+      },
+      {
+        title: "Establish who reviews AI-generated code and how",
+        why: "AI-generated PRs need at least the same review rigor as human PRs. In practice, they need more — because the author (the agent) can't explain intent, defend decisions, or answer 'why did you do it this way?'",
+        how: [
+          "PR descriptions must include: what was AI-generated vs. human-written, which tool/model was used, what prompt produced it",
+          "Reviewers should focus on: does this match our patterns? any hallucinated dependencies? security implications?",
+          "Use AI-assisted review tools in CI (CodeRabbit, etc.) as a first pass, human review as final gate",
+          "Establish a norm: AI-generated code that nobody on the team understands does not get merged"
+        ],
+        antipattern: "Rubber-stamping AI PRs because 'the tests pass'. That's how inconsistencies and security holes accumulate."
+      },
+      {
+        title: "Cost and token management — vibe coding has a meter running",
+        why: "AI coding tools charge by token or by usage tier. Sloppy context management and unnecessary re-prompting can 5–10x your costs without improving output quality.",
+        how: [
+          "Fresh sessions per feature — don't carry stale context you're paying to process",
+          "Reference files by path instead of pasting them — saves input tokens on every prompt",
+          "Use file-scoped rules so the agent doesn't load irrelevant context",
+          "Track your usage: most tools have dashboards. If costs spike, you're probably re-prompting too much instead of planning better"
+        ],
+        antipattern: "Pasting your entire codebase into every prompt because 'more context is better'. You're paying for noise, not signal."
+      },
+      {
+        title: "Model selection — match the model to the task",
+        why: "Using Opus for everything is expensive and often unnecessary. Using Haiku for everything produces low-quality output on complex tasks. The right model depends on the complexity.",
+        how: [
+          "Haiku/fast models: boilerplate generation, simple CRUD, formatting, documentation, commit messages, test scaffolding",
+          "Sonnet/mid-tier: feature implementation, bug fixes, refactoring, most day-to-day coding tasks",
+          "Opus/frontier: complex architecture decisions, subtle debugging, cross-module refactoring, security review, code review",
+          "When stuck: escalate to a higher model before re-prompting the same model 5 times — it's often cheaper"
+        ],
+        antipattern: "Using Opus to generate a README, or using Haiku to debug a race condition. Match the tool to the job."
+      },
+      {
+        title: "Share what works — team prompt libraries and decision patterns",
+        why: "If one dev figures out a great prompt for generating API tests, every dev should benefit. Vibe coding knowledge is team knowledge.",
+        how: [
+          "Maintain a shared prompts directory or wiki with proven prompts for common tasks",
+          "Include model/tool recommendations: 'For this type of task, Sonnet in Cursor with these rules works best'",
+          "Record anti-patterns: 'Don't ask Claude Code to do X, it consistently fails — do Y instead'",
+          "Retrospect on AI-assisted sprints: what worked, what wasted time, what rules need updating"
+        ],
+        antipattern: "Every dev independently discovering the same pitfalls and effective prompts. You're a team — compound the learning."
+      }
+    ]
+  },
+  {
+    id: "meta", title: "Meta Practices", subtitle: "Getting better at getting better", color: "#6B8F71", icon: "🧠",
+    practices: [
+      {
+        title: "Build a personal prompt library",
+        why: "Effective prompts are reusable. Documenting what works turns vibe coding from ad-hoc to systematic.",
+        how: [
+          "Save prompts that consistently produce good results",
+          "Note how wording variations affect output quality",
+          "Create templates for common patterns: 'Add CRUD for [entity]', 'Write tests for [module]'",
+          "Share effective prompts with your team — they're a form of institutional knowledge"
+        ],
+        antipattern: "Reinventing your prompts from scratch every session."
+      },
+      {
+        title: "Use agent reflection to improve your rules",
+        why: "After a session with feedback loops, the agent has learned what you care about. Capture that.",
+        how: [
+          "At session end: 'Based on the feedback I gave you, what rules should I add to prevent these issues?'",
+          "Review suggestions critically — agents will suggest additions even when none are needed",
+          "Keep rules files lean and specific, not encyclopedic",
+          "Iterate: rules should evolve with your project, not calcify"
+        ],
+        antipattern: "A 2000-line rules file that the agent can't fit in context anyway."
+      },
+      {
+        title: "Know when to stop vibing and start coding",
+        why: "Vibe coding is a tool, not a religion. Some things are faster and safer done by hand.",
+        how: [
+          "Vibe: prototypes, MVPs, CRUD, boilerplate, tests, internal tools, UI layouts",
+          "Don't vibe: security-critical systems, performance hot paths, complex distributed logic, crypto",
+          "Don't vibe: database migrations on production data, compliance-regulated code",
+          "If you're on your 5th prompt trying to fix the same bug, it's faster to just read the code"
+        ],
+        antipattern: "Stubbornly prompting for 2 hours when 15 minutes of manual coding would've solved it."
+      },
+      {
+        title: "Parallelize when possible",
+        why: "You're the bottleneck, not the agent. While one task runs, prepare the next prompt or review the last output.",
+        how: [
+          "Codex supports parallel tasks — submit independent work items simultaneously",
+          "While an agent implements, prepare the test spec for the next step",
+          "Use multiple branches for independent features and merge when both are verified",
+          "Your role shifts from coder to project manager running multiple agents"
+        ],
+        antipattern: "Watching the agent type, waiting for it to finish, then starting to think about what's next."
+      }
+    ]
+  }
+];
+
+const loopSteps = [
+  { step: "1", text: "Plan the feature (PRD or PLAN.md)", c: "#E8B931" },
+  { step: "2", text: "Git commit (checkpoint)", c: "#E8B931" },
+  { step: "3", text: "Write one small, specific prompt", c: "#4A90D9" },
+  { step: "4", text: "Review the diff line by line", c: "#D95B43" },
+  { step: "5", text: "Run tests + linter", c: "#D95B43" },
+  { step: "6", text: "Git commit (or revert)", c: "#6B8F71" },
+  { step: "7", text: "Update STATUS.md → next step", c: "#6B8F71" },
+  { step: "→", text: "Repeat from 3", c: "#8B949E" }
+];
+
+let activePhase = "before";
+let expandedPractice = null;
+
+function render() {
+  // Tabs
+  const tabsEl = document.getElementById("tabs");
+  tabsEl.innerHTML = phases.map(p => `
+    <button class="tab ${activePhase === p.id ? 'active' : ''}"
+            style="${activePhase === p.id ? 'border-top-color:' + p.color : ''}"
+            onclick="setPhase('${p.id}')">
+      <div class="tab-icon">${p.icon}</div>
+      <div class="tab-label">${p.title}</div>
+    </button>
+  `).join("");
+
+  // Content
+  const phase = phases.find(p => p.id === activePhase);
+  const contentEl = document.getElementById("phaseContent");
+  contentEl.style.borderTopColor = phase.color;
+
+  contentEl.innerHTML = `
+    <div class="phase-subtitle">${phase.subtitle}</div>
+    <div class="practices">
+      ${phase.practices.map((pr, idx) => {
+        const key = `${activePhase}-${idx}`;
+        const isExpanded = expandedPractice === key;
+        return `
+          <div class="practice ${isExpanded ? 'expanded' : ''}"
+               style="${isExpanded ? 'border-color:' + phase.color + '40' : ''}">
+            <button class="practice-header" onclick="togglePractice('${key}')">
+              <span class="practice-num" style="color:${phase.color}">${String(idx+1).padStart(2,'0')}</span>
+              <span class="practice-title">${pr.title}</span>
+              <span class="practice-arrow">›</span>
+            </button>
+            <div class="practice-body">
+              <div class="section">
+                <div class="section-label" style="color:${phase.color}">Why</div>
+                <div>${pr.why}</div>
+              </div>
+              <div class="section">
+                <div class="section-label" style="color:${phase.color}">How</div>
+                ${pr.how.map(h => `<div class="how-item"><span class="how-arrow">→</span><span>${h}</span></div>`).join("")}
+              </div>
+              <div class="antipattern">
+                <span class="antipattern-label">⚠ Don't </span>
+                <span class="antipattern-text">${pr.antipattern}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  // Loop steps
+  document.getElementById("loopSteps").innerHTML = loopSteps.map(s => `
+    <div class="loop-step">
+      <span class="loop-num" style="color:${s.c}">${s.step}</span>
+      <span>${s.text}</span>
+    </div>
+  `).join("");
+}
+
+function setPhase(id) {
+  activePhase = id;
+  expandedPractice = null;
+  render();
+}
+
+function togglePractice(key) {
+  expandedPractice = expandedPractice === key ? null : key;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

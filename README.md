@@ -2,6 +2,12 @@
 
 Two Claude Code skills for bootstrapping AI-assisted development workflows — from blank page to production-ready project structure.
 
+## Playbook
+
+[`vibe-coding-playbook.html`](./vibe-coding-playbook.html) — the full operator playbook covering vibe coding best practices, workflow, and governance philosophy. Open it in a browser.
+
+---
+
 ## Skills
 
 ### 1. `vibe-coding-new-project`
