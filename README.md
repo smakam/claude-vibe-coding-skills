@@ -1,6 +1,6 @@
-# Claude Vibe Coding Skills
+# Vibe Coding Playbook
 
-Two Claude Code skills for bootstrapping AI-assisted development workflows — from blank page to production-ready project structure.
+A methodology and toolkit for effective AI-assisted development — from blank page to production-ready project.
 
 ## Playbook
 
@@ -8,10 +8,12 @@ Two Claude Code skills for bootstrapping AI-assisted development workflows — f
 
 ---
 
-## Skills
+## Claude Code Skills
 
-### 1. `vibe-coding-new-project`
-Start a brand new project from scratch. Guides you through a kickoff interview → PRD creation → governance files → project scaffold.
+Ready-to-use skills for [Claude Code](https://claude.ai/code) that implement the playbook's workflow automatically.
+
+### `vibe-coding-new-project`
+Start a brand new project from scratch. Guides through a kickoff interview → PRD creation → governance files → project scaffold.
 
 **Triggers when you say things like:**
 - "I want to build X"
@@ -19,7 +21,7 @@ Start a brand new project from scratch. Guides you through a kickoff interview �
 - "Help me build a..."
 - "Bootstrap new project"
 
-### 2. `vibe-coding-bootstrap-existing-repo`
+### `vibe-coding-bootstrap-existing-repo`
 Add governance and AI context management to an existing codebase. Scans your repo, proposes `AGENTS.md`, `CLAUDE.md`, and task tracking files tailored to your stack.
 
 **Triggers when you say things like:**
@@ -27,38 +29,22 @@ Add governance and AI context management to an existing codebase. Scans your rep
 - "Set up AGENTS.md for this project"
 - "Add AI context management to this codebase"
 
----
-
-## Installation
-
-Each skill is a directory you copy into `~/.claude/skills/`. Claude Code picks them up automatically.
-
-### Install both skills
+### Installation
 
 ```bash
 # Clone the repo
-git clone https://github.com/smakam/claude-vibe-coding-skills.git
+git clone https://github.com/smakam/vibe-coding-playbook.git
 
 # Copy skills to your Claude config
-cp -r claude-vibe-coding-skills/skills/vibe-coding-new-project ~/.claude/skills/
-cp -r claude-vibe-coding-skills/skills/vibe-coding-bootstrap-existing-repo ~/.claude/skills/
+cp -r vibe-coding-playbook/claude-skills/vibe-coding-new-project ~/.claude/skills/
+cp -r vibe-coding-playbook/claude-skills/vibe-coding-bootstrap-existing-repo ~/.claude/skills/
 ```
 
-That's it. Restart Claude Code and the skills will be available.
-
-### Install just one skill
-
-```bash
-# New project skill only
-cp -r claude-vibe-coding-skills/skills/vibe-coding-new-project ~/.claude/skills/
-
-# Existing repo skill only
-cp -r claude-vibe-coding-skills/skills/vibe-coding-bootstrap-existing-repo ~/.claude/skills/
-```
+Restart Claude Code and the skills will be available.
 
 ---
 
-## What gets created
+## What the skills create
 
 Both skills produce a consistent governance structure:
 
@@ -80,12 +66,6 @@ The `vibe-coding-new-project` skill also creates `docs/PROJECT_BRIEF.md` (your P
 - **Scan before creating** — the existing-repo skill proposes everything for your review before writing any files
 - **Ephemeral vs. durable** — task plans are gitignored; decisions are committed
 - **Specific, not generic** — all files are filled in with your actual stack and project details
-
----
-
-## Requirements
-
-- [Claude Code](https://claude.ai/code) CLI
 
 ---
 
